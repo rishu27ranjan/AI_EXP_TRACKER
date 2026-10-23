@@ -1,0 +1,4 @@
+import { z } from "zod";
+const dateString=z.string().refine(value=>Number.isFinite(Date.parse(value)),"Enter a valid date.");
+export const expenseSchema=z.object({amount:z.number().positive().max(100000000),date:dateString,category:z.string().min(1).max(50),subcategory:z.string().max(50).optional(),description:z.string().max(200).optional(),paymentMethod:z.string().max(40).optional(),type:z.enum(["essential","non-essential","diwali","emergency"]),recurring:z.boolean().default(false),tags:z.array(z.string().max(30)).max(10).default([]),notes:z.string().max(500).optional()});
+export const upcomingSchema=z.object({title:z.string().min(1).max(100),amount:z.number().positive().max(100000000),dueDate:dateString,category:z.string().min(1).max(50),priority:z.enum(["low","medium","high"]).default("medium"),recurring:z.boolean().default(false),frequency:z.enum(["daily","weekly","monthly","quarterly","yearly"]).optional()});

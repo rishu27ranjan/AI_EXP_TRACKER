@@ -1,0 +1,2 @@
+import {Db} from "mongodb";
+export async function rateLimit(db:Db,key:string,limit:number,windowMs:number){const now=new Date(),col=db.collection("rateLimits"),filter={key,expiresAt:{$gt:now}},current=await col.findOne(filter);if(current&&current.count>=limit)return false;if(current){await col.updateOne(filter,{$inc:{count:1}});return true;}await col.updateOne({key},{$set:{count:1,expiresAt:new Date(now.getTime()+windowMs)}},{upsert:true});return true;}
