@@ -8,14 +8,14 @@ RupeeWise is a mobile-friendly personal finance tracker built around a configura
 - MongoDB Atlas or a local MongoDB server
 - Optional Gemini API key for AI Money Coach responses
 - Optional Twilio or MSG91 credentials for SMS
-- Optional Meta WhatsApp Cloud API credentials and an approved utility message template
+- Optional Twilio or Meta WhatsApp credentials and an approved utility message template
 
 1. Copy `.env.example` to `.env.local`.
 2. Set `MONGODB_URI` and a long random `AUTH_SECRET`.
 3. Optionally set `GEMINI_API_KEY` and `GEMINI_MODEL`.
 4. Run `npm install`, then `npm run dev` and register an account.
 
-Without Gemini, the coach falls back to deterministic guidance. SMS requires a configured provider, a verified phone number, and enabled preferences. WhatsApp reminders require a verified phone and explicit opt-in by the recipient. Configure an approved WhatsApp utility template with three body parameters, in order: amount, group name, app URL. The reminder endpoint is `POST /api/jobs/reminders`; schedule it hourly (or more often) with an external cron service using `Authorization: Bearer <JOB_SECRET>`. Keep that secret private. Quiet hours and the user's timezone are respected. Payment reminders begin 48 hours after the request and repeat no sooner than every 48 hours. They stop when the requester marks the payment received, the debtor marks it paid, or the request is cancelled. Failed provider attempts are retried after a 15-minute backoff.
+Without Gemini, the coach falls back to deterministic guidance. SMS requires a configured provider, a verified phone number, and enabled preferences. WhatsApp reminders require a verified phone and explicit opt-in by the recipient. Configure an approved WhatsApp utility template with three body parameters, in order: amount, group name, app URL. Choose `WHATSAPP_PROVIDER=twilio` to reuse Twilio account credentials and provide its WhatsApp sender and Content SID, or `WHATSAPP_PROVIDER=meta` for the Meta Cloud API. The reminder endpoint is `POST /api/jobs/reminders`; schedule it hourly (or more often) with an external cron service using `Authorization: Bearer <JOB_SECRET>`. Keep that secret private. Quiet hours and the user's timezone are respected. Payment reminders begin 48 hours after the request and repeat no sooner than every 48 hours. They stop when the requester marks the payment received, the debtor marks it paid, or the request is cancelled. Failed provider attempts are retried after a 15-minute backoff.
 
 ## Features
 
@@ -41,7 +41,7 @@ Diwali is shown as a separate budget. Record purchases as Diwali expenses to inc
 
 ## Security and deployment
 
-Sessions use signed HTTP-only cookies, passwords and OTPs are hashed, API input is validated, and records are scoped to the authenticated user. MongoDB indexes are initialized by the database layer. Set MongoDB Atlas network access and a least-privilege database user for deployment. Never commit `.env.local`; `.env.example` contains placeholders only. Configure an external scheduler and secrets manager for production. Review SMS provider templates and local sender requirements. For WhatsApp, set `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_REMINDER_TEMPLATE`, optional `WHATSAPP_TEMPLATE_LANGUAGE` and `WHATSAPP_API_VERSION`, plus `APP_URL`. Set up Meta webhook/quality monitoring and obtain clear user consent before enabling delivery.
+Sessions use signed HTTP-only cookies, passwords and OTPs are hashed, API input is validated, and records are scoped to the authenticated user. MongoDB indexes are initialized by the database layer. Set MongoDB Atlas network access and a least-privilege database user for deployment. Never commit `.env.local`; `.env.example` contains placeholders only. Configure an external scheduler and secrets manager for production. Review SMS provider templates and local sender requirements. For Twilio SMS, set `SMS_PROVIDER=twilio`, account SID, auth token, and SMS sender. For Twilio WhatsApp, use the same SID/token plus `TWILIO_WHATSAPP_FROM`, an approved `TWILIO_WHATSAPP_CONTENT_SID`, and `WHATSAPP_PROVIDER=twilio`. For Meta Cloud API, set `WHATSAPP_PROVIDER=meta`, `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, and `WHATSAPP_REMINDER_TEMPLATE`; set the language/version if required. Set `APP_URL` for the template link. Use approved templates/senders and obtain clear user consent before enabling delivery.
 
 ## API groups
 
