@@ -1,6 +1,6 @@
 # RupeeWise
 
-RupeeWise is a mobile-friendly personal finance tracker built around a configurable monthly savings target (₹65,000 by default). It includes private accounts, expenses, budgets, deterministic forecasts, Diwali planning, shared groups and settlements, notifications, phone verification, optional SMS, analytics, and a Money Coach backed by Gemini.
+RupeeWise is a mobile-friendly personal finance tracker built around a configurable monthly savings target (₹65,000 by default). It includes private accounts, expenses, budgets, deterministic forecasts, Diwali planning, shared groups and settlements, notifications, phone verification, optional SMS and WhatsApp, analytics, and a Money Coach backed by Gemini.
 
 ## Requirements and setup
 
@@ -8,20 +8,21 @@ RupeeWise is a mobile-friendly personal finance tracker built around a configura
 - MongoDB Atlas or a local MongoDB server
 - Optional Gemini API key for AI Money Coach responses
 - Optional Twilio or MSG91 credentials for SMS
+- Optional Meta WhatsApp Cloud API credentials and an approved utility message template
 
 1. Copy `.env.example` to `.env.local`.
 2. Set `MONGODB_URI` and a long random `AUTH_SECRET`.
 3. Optionally set `GEMINI_API_KEY` and `GEMINI_MODEL`.
 4. Run `npm install`, then `npm run dev` and register an account.
 
-Without Gemini, the coach falls back to deterministic guidance. SMS requires a configured provider, a verified phone number, and enabled preferences. The reminder endpoint is `POST /api/jobs/reminders`; schedule it with an external cron service using `Authorization: Bearer <JOB_SECRET>`. Keep that secret private. SMS quiet hours and the user's timezone are respected by this job.
+Without Gemini, the coach falls back to deterministic guidance. SMS requires a configured provider, a verified phone number, and enabled preferences. WhatsApp reminders require a verified phone and explicit opt-in by the recipient. Configure an approved WhatsApp utility template with three body parameters, in order: amount, group name, app URL. The reminder endpoint is `POST /api/jobs/reminders`; schedule it hourly (or more often) with an external cron service using `Authorization: Bearer <JOB_SECRET>`. Keep that secret private. Quiet hours and the user's timezone are respected. Payment reminders begin 48 hours after the request and repeat no sooner than every 48 hours. They stop when the requester marks the payment received, the debtor marks it paid, or the request is cancelled. Failed provider attempts are retried after a 15-minute backoff.
 
 ## Features
 
 - Expense tracking, custom categories, upcoming obligations, monthly category budgets, Diwali sinking fund, and spending analytics.
 - Backend finance engine for savings, safe-to-spend, projections, shared personal shares, cash outflow, receivables, payables, and settlement plans. LLM responses do not calculate financial values.
 - Shared groups, invitation links, equal/exact/percentage/share splits, multiple payers, settlement requests, settlement history, and manually initiated reminders.
-- In-app notifications, notification preferences, phone OTP verification, SMS provider adapters, and a deduplicated scheduled reminder endpoint.
+- In-app notifications, notification preferences, phone OTP verification, SMS provider adapters, WhatsApp Cloud API templates, and a deduplicated scheduled reminder endpoint.
 
 ## Commands
 
@@ -40,7 +41,7 @@ Diwali is shown as a separate budget. Record purchases as Diwali expenses to inc
 
 ## Security and deployment
 
-Sessions use signed HTTP-only cookies, passwords and OTPs are hashed, API input is validated, and records are scoped to the authenticated user. MongoDB indexes are initialized by the database layer. Set MongoDB Atlas network access and a least-privilege database user for deployment. Never commit `.env.local`; `.env.example` contains placeholders only. Configure an external scheduler and secrets manager for production. Review SMS provider templates and local sender requirements before enabling delivery.
+Sessions use signed HTTP-only cookies, passwords and OTPs are hashed, API input is validated, and records are scoped to the authenticated user. MongoDB indexes are initialized by the database layer. Set MongoDB Atlas network access and a least-privilege database user for deployment. Never commit `.env.local`; `.env.example` contains placeholders only. Configure an external scheduler and secrets manager for production. Review SMS provider templates and local sender requirements. For WhatsApp, set `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_REMINDER_TEMPLATE`, optional `WHATSAPP_TEMPLATE_LANGUAGE` and `WHATSAPP_API_VERSION`, plus `APP_URL`. Set up Meta webhook/quality monitoring and obtain clear user consent before enabling delivery.
 
 ## API groups
 
